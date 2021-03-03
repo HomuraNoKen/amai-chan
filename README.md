@@ -8,8 +8,8 @@ nhentai daily bot
 - requests    =2.24.0
 
 ## relevant page
-[discord.py](https://discordpy.readthedocs.io/en/latest/index.html)
-[nhentai.py](https://pypi.org/project/nhentai.py/)
-[requests](https://requests.readthedocs.io/en/master/)
-[project page](https://trello.com/b/UJa4REuT/nh-discord-bot-v3)
-[discord dev app page](https://discord.com/developers/applications)
+- [discord.py](https://discordpy.readthedocs.io/en/latest/index.html)
+- [nhentai.py](https://pypi.org/project/nhentai.py/)
+- [requests](https://requests.readthedocs.io/en/master/)
+- [project page](https://trello.com/b/UJa4REuT/nh-discord-bot-v3)
+- [discord dev app page](https://discord.com/developers/applications)
