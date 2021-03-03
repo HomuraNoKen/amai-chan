@@ -2,10 +2,10 @@
 nhentai daily bot
 
 ## software
-python      =3.8
-discord.py  =1.6.0
-nhentai.py  =2.2.1
-requests    =2.24.0
+- python      =3.8
+- discord.py  =1.6.0
+- nhentai.py  =2.2.1
+- requests    =2.24.0
 
 ## relevant page
 [discord.py](https://discordpy.readthedocs.io/en/latest/index.html)
