@@ -12,7 +12,7 @@ else:
     import config
 
 #time_set (might use database to set it instead)
-alert_time_day = 8 
+alert_time_day = 8
 alert_time_night = alert_time_day + 12
 
 bot = Bot(command_prefix=config.BOT_PREFIX) 
@@ -21,9 +21,9 @@ bot = Bot(command_prefix=config.BOT_PREFIX)
 async def on_ready():
     await bot.wait_until_ready()
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=" HENTAI. $help"))
-    #bot.loop.create_task(time_check())
+    bot.loop.create_task(time_check())
 
-""" #finish up daily bot 
+#finish up daily bot 
 @bot.event
 async def time_check():
     while not bot.is_closed():
@@ -32,7 +32,12 @@ async def time_check():
         now = int(datetime.strftime(datetime.now(),'%H'))
         if now == alert_time_day or now == alert_time_night:
             embed = doujin_generate(True)
-"""
+            msg = await channel.send(embed=embed)
+            await msg.add_reaction('👍')
+            await msg.add_reaction('👎')
+            await asyncio.sleep(39600)
+        else:
+            await asyncio.sleep(1200)
 
 bot.remove_command("help")
 
@@ -48,6 +53,23 @@ async def help(ctx):
 @bot.command()
 async def search(ctx, *, arg):
     embed = doujin_search(arg)
+    msg = await ctx.send(embed=embed)
+    await msg.add_reaction('👍')
+    await msg.add_reaction('👎')
+    await msg.add_reaction('❌')
+
+@bot.command()
+async def give(ctx):
+    embed = doujin_generate(False)
+    msg = await ctx.send(embed=embed)
+    await msg.add_reaction('👍')
+    await msg.add_reaction('👎')
+    await msg.add_reaction('❌')
+
+@bot.command()
+async def give_lang(ctx, *, arg):
+    parameter = arg.split(',')
+    embed = doujin_generate_parameter(parameter, True, False)
     msg = await ctx.send(embed=embed)
     await msg.add_reaction('👍')
     await msg.add_reaction('👎')
