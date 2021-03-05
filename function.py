@@ -27,8 +27,7 @@ colour_error = 0xf83f3f
 
 #embed
 def doujin_embed(doujin, isDaily=False):
-    print(doujin.get_title_en())
-    embed=discord.Embed(title=str(doujin.get_title_en()),  url=str(doujin.get_url()), description=str(doujin.get_id()) ,color=colour_embed)
+    embed=discord.Embed(title=str(doujin.get_title_en()),  url=str(doujin.get_url()), description='#'+str(doujin.get_id()) ,color=colour_embed)
     embed.set_image(url=str(doujin.get_thumbnail()))
     embed.add_field(name="Tag", value=', '.join('` {0} `'.format(x) for x in doujin.get_tag()), inline=False)
     embed.add_field(name="Author", value=', '.join('` {0} `'.format(x) for x in doujin.get_author()), inline=True)
@@ -42,6 +41,23 @@ def error_embed(error, origin):
     embed.add_field(name="Error", value=error, inline=False)
     embed.add_field(name="Command", value=origin, inline=False)
     embed.set_footer(text=error_msg[random.randint(0,len(error_msg)-1)])
+    return embed
+
+def help_message():
+    embed=discord.Embed(description="Hello, I'm Amai-chan and I am a nHentai bot.")
+    embed.add_field(name="** **", value="Exclude `[ ]` when executing a command", inline=False)
+    embed.add_field(name="** **", value="`[ parameters* ]` are optional", inline=False)
+    embed.add_field(name="Commands:", value="** **", inline=False)
+    embed.add_field(name="** **", value='''``` 
+    $search [ ID ]              Search doujin based on ID  
+    $read [ ID ][ PAGE NUM* ]   Read doujin based on ID and can accept page    
+    $give                       Give random doujin
+    $give_lang [ EN/JP ]        Give random doujin with selected language
+    $give_tag [ TAG ]           Give random doujin with tag    
+    $thank [ ID* ]              Thank the bot
+    
+     ```''', inline=False) #create table Extra comman, finish up help message
+    embed.set_footer(text="Feel free to use me master ^ - ^")
     return embed
 
 #doujin related function
@@ -64,4 +80,4 @@ def doujin_generate(isDaily=False):
             else:
                 doujin_result.replace_doujin(nhentai.get_random_id())
     
-    return #embed
+    return doujin_embed(doujin_result, True)
