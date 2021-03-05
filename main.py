@@ -11,23 +11,39 @@ if not os.path.isfile("config.py"):
 else:
     import config
 
-intents = discord.Intents.default() #remove
+#time_set (might use database to set it instead)
+alert_time_day = 8 
+alert_time_night = alert_time_day + 12
 
-bot = Bot(command_prefix=config.BOT_PREFIX, intents=intents) #remove : intents=intents
+bot = Bot(command_prefix=config.BOT_PREFIX) 
 
 @bot.event
 async def on_ready():
-    bot.loop.create_task(status_check()) #remove
+    await bot.wait_until_ready()
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=" HENTAI. $help"))
+    #bot.loop.create_task(time_check())
 
-async def status_check(): #remove
-    while True:
-        await bot.change_presence(activity=discord.Game("with you!"))
-        await asyncio.sleep(60)
-        
-        await bot.change_presence(activity=discord.Game("with humans!"))
-        await asyncio.sleep(60)
+""" #finish up daily bot 
+@bot.event
+async def time_check():
+    while not bot.is_closed():
+        channel = bot.get_channel(config.CHANNEL_ID)
+
+        now = int(datetime.strftime(datetime.now(),'%H'))
+        if now == alert_time_day or now == alert_time_night:
+            embed = doujin_generate(True)
+"""
 
 bot.remove_command("help")
+
+@bot.command()
+async def help(ctx):
+    embed = help_message()
+    msg = await ctx.send(embed=embed)
+    await msg.add_reaction('👍')
+    await msg.add_reaction('👎')
+    await msg.add_reaction('❌')
+
 
 @bot.command()
 async def search(ctx, *, arg):
