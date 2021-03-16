@@ -10,5 +10,5 @@ APPLICATION_ID = "752111805828038687"
 
 OWNERS = [214765920952778753]
 BLACKLIST = [814904256897351711]
-CHANNEL_ID = 751706636682526823 #will be stored in database instead
+CHANNEL_ID = 751706636682526823 #will be stored in database instead 
 STARTUP_COGS = ["cogs.general", "cogs.help", "cogs.moderation", "cogs.owner"]
