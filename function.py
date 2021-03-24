@@ -1,29 +1,52 @@
-import random
-import urllib.request, urllib.error
+import random, asyncio
 from nhDetail import nhDetail
 
 # === downloaded from pypl/outside source ===
 import nhentai
 import discord
+import requests
+
+from codetiming import Timer #for testing purpose only
 
 #tag
-bannedTag = ["guro","rape","torture","necrophilia","amputee","drugs"]
-softBannedTag = ["lolicon","shotacon", "incest"]
-weirdKink = ["netorare","fisting", "exhibitionism"]
+bannedTag = ["guro","rape","torture","necrophilia","amputee", "drugs"]
+softBannedTag = ["lolicon", "shotacon", "incest", "blackmail"]
+weirdKink = ["netorare", "fisting", "exhibitionism"]
 
 #reply message
-thank = []
-reply_normalTag = []
-reply_weirdKink = []
-reply_softBannedTag = []
-reply_bannedTag = []
+thank = ["your welcome"]
+reply_normalTag = ["normal tag"]
+reply_weirdKink = ["weird kink"]
+reply_softBannedTag = ["SOFT banned tag"]
+reply_bannedTag = ["BANNED tag"]
 
 #error message
-error_msg = ["OWO UWU, WE MADE A FUCKY WUCKY", "beep boop, hopefully it is not a 404 error", "The operation failed successfully", "There is an errRRRRRRRRRRRRR", "pls call @tiktok e-boy#0180 real quick, I\'m having a headache"]
+error_msg = ["OWH UWH UWU, WE MADE A FUCKY WUCKY", "beep boop, hopefully it is not a 404 error", "The operation failed successfully", "There is an errRRRRRRRRRRRRR", "pls call @tiktok e-boy#0180 real quick, I\'m having a headache"]
 
 #colour
 colour_embed = 0x00ff00
 colour_error = 0xf83f3f
+
+#random generated
+#limit
+rand_limit = 399999
+#function
+async def rand_id_generate():
+    link = "https://nhentai.net/g/" 
+    hdr = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36'}
+    
+    timer = Timer(text=f"Randomize sauce elapsed time: {{:.5f}}")
+    timer.start()
+    while True:
+        sauce = random.randint(0,rand_limit)
+        link_comp = link+str(sauce)
+        req = requests.get(link_comp, hdr)
+        try:
+            req.raise_for_status()
+        except requests.exceptions.RequestException:
+            continue
+        timer.stop()
+        return sauce
 
 #embed
 def doujin_embed(doujin, isDaily=False):
@@ -32,8 +55,17 @@ def doujin_embed(doujin, isDaily=False):
     embed.add_field(name="Tag", value=', '.join('` {0} `'.format(x) for x in doujin.get_tag()), inline=False)
     embed.add_field(name="Author", value=', '.join('` {0} `'.format(x) for x in doujin.get_author()), inline=True)
     embed.add_field(name="Language", value=', '.join('` {0} `'.format(x) for x in doujin.get_language()), inline=True)
-    embed.add_field(name="Pages", value='`' + str(doujin.get_pages()) + '`' , inline=True)
-    #add footer later
+    embed.add_field(name="Pages", value='`' + str(doujin.get_page_len()) + '`' , inline=True)
+    if not isDaily:
+        if not set(bannedTag).isdisjoint(doujin.get_tag()):
+            embed.set_footer(text=reply_bannedTag[random.randint(0,len(reply_bannedTag)-1)])
+        elif not set(softBannedTag).isdisjoint(doujin.get_tag()):
+            embed.set_footer(text=reply_softBannedTag[random.randint(0,len(reply_softBannedTag)-1)])
+        elif not set(weirdKink).isdisjoint(doujin.get_tag()):
+            embed.set_footer(text=reply_weirdKink[random.randint(0,len(reply_weirdKink)-1)])
+        else:
+            embed.set_footer(text=reply_normalTag[random.randint(0,len(reply_normalTag)-1)])
+
     return embed
 
 def error_embed(error, origin):
@@ -54,17 +86,24 @@ $search [ ID ]              Search doujin based on ID
 $read [ ID ][ PAGE NUM* ]   Read doujin based on ID and can 
                             accept page    
 
-$give                       Give random doujin
+$rand                       Give random doujin
 
-$give_lang [ EN/JP ]        Give random doujin with selected 
+$rand_lang [ EN/JP ]        Give random doujin with selected 
                             language
 
-$give_tag [ TAG ]           Give random doujin with tag
+$rand_tag [ TAG ]           Give random doujin with tag
 
 $thank [ ID* ]              Thank the bot
     
      ```''', inline=False) #create table Extra comman, finish up help message
     embed.set_footer(text="Feel free to use me master ^ - ^")
+    return embed
+
+def doujin_read_embed(doujin,cur_page,max_page):
+    embed=discord.Embed(title=str(doujin.get_title_en()),  url=str(doujin.get_url()), description='#'+str(doujin.get_id()) ,color=colour_embed)
+    embed.set_image(url=str(doujin.get_pages(cur_page)))
+    embed.set_footer(text=f"{cur_page+1}/{max_page}")
+
     return embed
 
 #doujin related function
@@ -77,44 +116,74 @@ def doujin_search(sauce):
     except Exception as e: #err for invalid value
         return error_embed(f"{type(e).__name__}: {e}.", "doujin_search(sauce)")
 
-def doujin_generate(isDaily=False):
-    sauce = int(nhentai.get_random_id())
-    doujin_result = nhDetail(nhentai.get_doujin(sauce))
+async def doujin_generate():
+    try:
+        sauce = await rand_id_generate()
+        doujin_result = nhDetail(nhentai.get_doujin(sauce))
+        embed = doujin_embed(doujin_result, False)
+        return embed
 
-    if(isDaily):
-        while True:
-            if set(bannedTag).isdisjoint(doujin_result.get_tag()) or "None" in doujin_result.get_tag():
-                break
-            else:
-                sauce = int(nhentai.get_random_id())
-                doujin_result.replace_doujin(nhentai.get_doujin(sauce))
-    
-    return doujin_embed(doujin_result, True)
+    except Exception as e:
+        return error_embed(f"{type(e).__name__}: {e}.", "doujin_generate(param_type, parameter)")
 
-def doujin_generate_parameter(parameter, isLang, isTag):
-    sauce = int(nhentai.get_random_id())
-    doujin_result = nhDetail(nhentai.get_doujin(sauce))
+def lang(parameter):
+    try:
+        if parameter[0].lower() == "en":
+            parameter[0] = "english"
+        if parameter[0].lower() == "jp":
+            parameter[0] = "japanese"
+        if parameter[0].lower() == "cn":
+            parameter[0] = "chinese"
+        
+        if not parameter[0].lower() in ["english", "japanese", "chinese"]:
+            raise ValueError("Parameter value does not match with existing option")
+        
+        randPage = random.randint(1,20)
+        randDoujin = random.randint(0,24)
+        print(randPage)
 
-    if isLang:
-        x=0
-        if len(parameter) != 1: # use try except, raiseException for this instead
-            return error_embed("Parameter input cannot be more/less than limit(1).","$give_lang language")
-        while True:
-            x+=1
-            if not set(parameter).isdisjoint(doujin_result.get_language()):
-                break
-            else:
-                sauce = int(nhentai.get_random_id())
-                doujin_result.replace_doujin(nhentai.get_doujin(sauce))
-            if x>=10:
-                return error_embed("Cannot find doujin before an exception was raised.","$give_lang language")
-    
-    elif(isTag):
-        while True:
-            if not set(parameter).isdisjoint(doujin_result.get_tag()):
-                break
-            else:
-                sauce = int(nhentai.get_random_id())
-                doujin_result.replace_doujin(nhentai.get_doujin(sauce))
-    
-    return doujin_embed(doujin_result)
+        doujin_list = nhentai.search(parameter[0], randPage, "popular-today")
+        doujin = nhDetail(doujin_list[randDoujin])
+        embed = doujin_embed(doujin)
+        return embed
+
+    except Exception as e:
+        return error_embed(f"{type(e).__name__}: {e}.", "rand_lang(param_type, parameter)")
+
+def tag(parameter):
+    try:
+        randPage = random.randint(1,20)
+        randDoujin = random.randint(0,24)
+
+        doujin_list = nhentai.search(parameter, randPage, "popular-today")
+        doujin = nhDetail(doujin_list[randDoujin])
+        embed = doujin_embed(doujin)
+        return embed
+
+    except IndexError as e:
+        return error_embed(f"{type(e).__name__}: {e}. (include less tag if this error persist)", "rand_lang(param_type, parameter)")
+    except Exception as e:
+        return error_embed(f"{type(e).__name__}: {e}.", "rand_lang(param_type, parameter)")
+
+def doujin_read(parameter):
+    param_length = len(parameter)
+    doujin_id = 0
+    doujin_cur_page = 0
+
+    if param_length < 1: # use try except, raiseException for this instead
+        return error_embed("No parameter was inputed.","doujin_read(parameter)")
+    elif param_length == 1:
+        doujin_id = parameter[0]
+    elif param_length == 2:
+        doujin_id = parameter[0]
+        doujin_cur_page = int(parameter[1])-1
+    else: # use try except, raiseException for this instead
+        return error_embed("Parameter length exceed maximum input.","doujin_read(parameter)")
+
+    doujin = nhDetail(nhentai.gdDoujin(doujin_id))
+    doujin_max_page = doujin.get_page_len()
+
+    if doujin_cur_page >= doujin_max_page or doujin_cur_page < 0: #jesus, use try except, raiseException for this dickhead
+        return error_embed("Parameter [page] received invalid input.","$read [id] [page]")
+
+    return doujin_read_embed(doujin, doujin_cur_page, doujin_max_page)

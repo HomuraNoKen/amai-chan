@@ -24,7 +24,7 @@ class nhDetail:
                 self.__artist.append(tags.name)
             elif tags.type == 'language':
                 self.__language.append(tags.name)
-    
+
     def get_doujin(self):
         return self.__doujin
 
@@ -55,8 +55,11 @@ class nhDetail:
             self.__language.append("None")
         return self.__language
     
-    def get_pages(self):
+    def get_page_len(self):
         return len(self.__doujin.pages)
+
+    def get_pages(self, page):
+        return self.__doujin.pages[page].url
 
     def get_thumbnail(self):
         return self.__doujin.thumbnail
