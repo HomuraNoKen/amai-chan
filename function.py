@@ -31,7 +31,7 @@ colour_error = 0xf83f3f
 #limit
 rand_limit = 399999
 #function
-async def rand_id_generate():
+def rand_id_generate():
     link = "https://nhentai.net/g/" 
     hdr = {'User-Agent' : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36'}
     
@@ -49,6 +49,11 @@ async def rand_id_generate():
         return sauce
 
 #embed
+def message_embed(message_title:str, message:str="** **", title:str=" ", url:str="", desc:str=" "):
+    embed=discord.Embed(title=title, url=url, description=desc, color=colour_embed)
+    embed.add_field(name=message_title, value=message, inline=False)
+    return embed
+
 def doujin_embed(doujin, isDaily=False):
     embed=discord.Embed(title=str(doujin.get_title_en()),  url=str(doujin.get_url()), description='#'+str(doujin.get_id()) ,color=colour_embed)
     embed.set_image(url=str(doujin.get_thumbnail()))
@@ -76,15 +81,12 @@ def error_embed(error, origin):
     return embed
 
 def help_message():
-    embed=discord.Embed(description="Hello, I'm Amai-chan and I am a nHentai bot.")
+    embed=discord.Embed(description="Hello, I'm Amai-chan and I am a nHentai bot. (NSFW bot obviously)")
     embed.add_field(name="Exclude `[ ]` when executing a command", value="** **", inline=False)
     embed.add_field(name="`[ parameters* ]` are optional", value="** **", inline=False)
     embed.add_field(name="Commands:", value="** **", inline=False)
     embed.add_field(name="** **", value='''``` 
-$search [ ID ]              Search doujin based on ID  
-
-$read [ ID ][ PAGE NUM* ]   Read doujin based on ID and can 
-                            accept page    
+$search [ ID ]              Search doujin based on ID
 
 $rand                       Give random doujin
 
@@ -116,12 +118,18 @@ def doujin_search(sauce):
     except Exception as e: #err for invalid value
         return error_embed(f"{type(e).__name__}: {e}.", "doujin_search(sauce)")
 
-async def doujin_generate():
+def doujin_generate(isDaily=False):
     try:
-        sauce = await rand_id_generate()
-        doujin_result = nhDetail(nhentai.get_doujin(sauce))
-        embed = doujin_embed(doujin_result, False)
-        return embed
+        x=0
+        while True:
+            sauce = rand_id_generate()
+            doujin_result = nhDetail(nhentai.get_doujin(sauce))
+            if set(bannedTag).isdisjoint(doujin_result.get_tag()):
+                embed = doujin_embed(doujin_result, False)
+                return embed
+            x+=1
+            if x > 20:
+                raise TimeoutError("Doujin could not be generated before a Timeout Error was raised.")
 
     except Exception as e:
         return error_embed(f"{type(e).__name__}: {e}.", "doujin_generate(param_type, parameter)")
@@ -164,26 +172,3 @@ def tag(parameter):
         return error_embed(f"{type(e).__name__}: {e}. (include less tag if this error persist)", "rand_lang(param_type, parameter)")
     except Exception as e:
         return error_embed(f"{type(e).__name__}: {e}.", "rand_lang(param_type, parameter)")
-
-def doujin_read(parameter):
-    param_length = len(parameter)
-    doujin_id = 0
-    doujin_cur_page = 0
-
-    if param_length < 1: # use try except, raiseException for this instead
-        return error_embed("No parameter was inputed.","doujin_read(parameter)")
-    elif param_length == 1:
-        doujin_id = parameter[0]
-    elif param_length == 2:
-        doujin_id = parameter[0]
-        doujin_cur_page = int(parameter[1])-1
-    else: # use try except, raiseException for this instead
-        return error_embed("Parameter length exceed maximum input.","doujin_read(parameter)")
-
-    doujin = nhDetail(nhentai.gdDoujin(doujin_id))
-    doujin_max_page = doujin.get_page_len()
-
-    if doujin_cur_page >= doujin_max_page or doujin_cur_page < 0: #jesus, use try except, raiseException for this dickhead
-        return error_embed("Parameter [page] received invalid input.","$read [id] [page]")
-
-    return doujin_read_embed(doujin, doujin_cur_page, doujin_max_page)
