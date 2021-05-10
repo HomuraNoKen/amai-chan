@@ -14,6 +14,7 @@ my personal daily bot
 - [requests](https://requests.readthedocs.io/en/master/)
 - [discord dev app page](https://discord.com/developers/applications)
 
+## 
 <details>
   <summary> :^) </summary>
   
