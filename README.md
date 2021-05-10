@@ -12,8 +12,7 @@ my personal daily bot
 - [discord.py](https://discordpy.readthedocs.io/en/latest/index.html)
 - [requests](https://requests.readthedocs.io/en/master/)
 - [discord dev app page](https://discord.com/developers/applications)
-- [mongodb python](https://pypi.org/project/pymongo/)
-- [mongodb docs](https://docs.mongodb.com/manual/reference/)
+- [pymongo](https://docs.mongodb.com/manual/reference/)
 
 ## 
 <details>
